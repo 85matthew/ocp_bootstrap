@@ -3,4 +3,4 @@ kind: Kustomization
 
 bases:
   - ../../../base/applications/auth/
-  - ../../../base/applications/pipelines-operator/
+  - ../../../overlays/applications/pipelines-operator/

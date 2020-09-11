@@ -178,7 +178,7 @@ def seal_secret(full_path_to_file):
 
     dir = str(pathlib.Path(full_path_to_file).parent.absolute())
     filename = os.path.basename(full_path_to_file)
-    command = f"kubeseal <{filename}>sealed-{filename}"
+    command = f"kubeseal --format=yaml <{filename}>sealed-{filename}"
     os.chdir(f'{dir}')
     os.system(command)
     os.remove(SCRATCH_MANIFEST_FULL_FILE_PATH)

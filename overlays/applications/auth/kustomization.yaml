@@ -8,4 +8,4 @@ bases:
 
 resources:
   - sealed-htpasswd.yaml
-  - assign-admin/*.yaml
+  - assign-admin/

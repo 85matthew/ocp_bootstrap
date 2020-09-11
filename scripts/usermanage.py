@@ -20,10 +20,10 @@ import subprocess
 SCRIPT_DIR = pathlib.Path(__file__).parent.absolute()
 BASE_REPO_PATH = SCRIPT_DIR.parent.absolute()
 SCRATCH_HTPASS_FILE_NAME= "htpass.txt"
-SCRATCH_HTPASS_FULL_FILE_NAME= "{BASE_REPO_PATH}/build/htpass.txt"
+SCRATCH_HTPASS_FULL_FILE_NAME= f'{BASE_REPO_PATH}/build/htpass.txt'
 SCRATCH_MANIFEST_FILE_NAME = "htpasswd.yaml"
 SCRATCH_MANIFEST_FULL_FILE_PATH = f'{BASE_REPO_PATH}/overlays/applications/auth/{SCRATCH_MANIFEST_FILE_NAME}'
-ADMIN_PERMS_FULL_PATH= f'{BASE_REPO_PATH}/overlays/applications/auth/assign-admin/'
+ADMIN_PERMS_FULL_DIR= f'{BASE_REPO_PATH}/overlays/applications/auth/assign-admin'
 
 command = {}
 users = []
@@ -61,8 +61,9 @@ def htpasswd_execute(command):
     os.system(command)
 
 def load_file():
-    text = open(f'{BASE_REPO_PATH}/build/{SCRATCH_HTPASS_FILE_NAME}')
+    text = open(SCRATCH_HTPASS_FULL_FILE_NAME)
     raw_data = text.read()
+    text.seek(0)
     data = text.readlines()
     for line in data:
         username, password = line.strip().split(':')
@@ -111,12 +112,12 @@ subjects:
   kind: User
   name: {username}
 """
-    f = open(f'{ADMIN_PERMS_FULL_PATH}/{username}.yaml', "w")
+    f = open(f'{ADMIN_PERMS_FULL_DIR}/{username}.yaml', "w")
     f.write(template)
     f.close()
 
 def delete_admin_permissions(username):
-    os.remove(f'{ADMIN_PERMS_FULL_PATH}/{username}.yaml')
+    os.remove(f'{ADMIN_PERMS_FULL_DIR}/{username}.yaml')
 
 def save_htpasswd():
     cmd = f'''oc create secret generic htpass-secret 
@@ -132,7 +133,6 @@ def save_htpasswd():
     f = open(SCRATCH_MANIFEST_FULL_FILE_PATH, "w")
     f.write(result.stdout.decode('utf-8'))
     f.close()
-    print(result.stdout)
     seal_secret(SCRATCH_MANIFEST_FULL_FILE_PATH)
 
 
@@ -148,6 +148,7 @@ def add_user(args, user_list):
     htpasswd_execute(command)
     if 'admin' in args.username:
         write_admin_permissions(args.username)
+        edit_kustomize("add", args.username)
 
 def delete_user(args):
     command = f"htpasswd -D {SCRATCH_HTPASS_FILE_NAME} {args.username}"
@@ -157,6 +158,17 @@ def delete_user(args):
             delete_admin_permissions(args.username)
         except:
             print("admin-permissions file does not exist: <continuing>")
+        edit_kustomize("remove", args.username)
+
+def edit_kustomize(action, username):
+    os.chdir(ADMIN_PERMS_FULL_DIR)
+    cmd = f"kustomize edit {action} resource {username}.yaml"
+    print(cmd)
+    args = shlex.split(cmd)
+    try:
+        result = subprocess.run(args, stdout=subprocess.PIPE )
+    except:
+        print("Admin permissions don't exist: <continuing>")
 
 def htpasswd_execute(command):
     os.chdir(f'{BASE_REPO_PATH}/build')

@@ -2,5 +2,5 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 bases:
-  - github.com/redhat-canada-gitops/catalog/elasticsearch-operator/base/
-  - github.com/redhat-canada-gitops/catalog/installplan-approver/base
+  - git::https://github.com/redhat-canada-gitops/catalog/elasticsearch-operator/base/
+  - git::https://github.com/redhat-canada-gitops/catalog/installplan-approver/base

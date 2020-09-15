@@ -4,6 +4,3 @@ kind: Kustomization
 bases:
   - ../../../base/applications/elasticsearch-operator
   - git::https://github.com/redhat-canada-gitops/catalog/installplan-approver/base
-
-resources:
-  - namespace.yaml

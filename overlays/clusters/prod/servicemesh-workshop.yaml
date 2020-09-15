@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: service-mesh-101-workshop
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/85matthew/application-catalog.git
+    targetRevision: HEAD
+    path: workshops/servicemesh-101/overlays/
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

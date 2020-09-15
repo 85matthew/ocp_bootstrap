@@ -5,3 +5,6 @@ bases:
   - ../../../overlays/applications/auth/
   - ../../../overlays/applications/pipelines-operator/
   - ../../capabilities/service_mesh/
+
+resources:
+  - servicemesh-workshop.yaml

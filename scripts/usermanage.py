@@ -33,7 +33,9 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("action", type=str, help='username to take action on')
     parser.add_argument("username", type=str, nargs='?', help='username to take action on')
-    parser.add_argument("password", type=str, nargs='?', help='username to take action on')
+    parser.add_argument("--password", type=str, nargs='?', help='username to take action on')
+    parser.add_argument("--count", type=int, nargs='?', help='count for actions against sequenced users')
+    parser.add_argument("--start", type=int, nargs='?', help='count for actions against sequenced users')
     return parser.parse_args()
 
 def validate_ocp_logged_in():
@@ -136,29 +138,29 @@ def save_htpasswd():
     seal_secret(SCRATCH_MANIFEST_FULL_FILE_PATH)
 
 
-def add_user(args, user_list):
+def add_user(username, args, user_list):
     if args.password is None:
-        command=  f"htpasswd -B {SCRATCH_HTPASS_FILE_NAME} {args.username}"
+        command=  f"htpasswd -B {SCRATCH_HTPASS_FILE_NAME} {username}"
     else:
-        command =  f"htpasswd -bB {SCRATCH_HTPASS_FILE_NAME} {args.username} {args.password}"
+        command =  f"htpasswd -bB {SCRATCH_HTPASS_FILE_NAME} {username} {args.password}"
 
     # Check if user already exists in file
-    if args.username in user_list:
-        if not input(f"{args.username} already exists. Overwrite password?(y/n): ").lower().strip()[:1] == "y": sys.exit(1)
+    if username in user_list:
+        if not input(f"{username} already exists. Overwrite password?(y/n): ").lower().strip()[:1] == "y": sys.exit(1)
     htpasswd_execute(command)
-    if 'admin' in args.username:
-        write_admin_permissions(args.username)
-        edit_kustomize("add", args.username)
+    if 'admin' in username:
+        write_admin_permissions(username)
+        edit_kustomize("add", username)
 
-def delete_user(args):
-    command = f"htpasswd -D {SCRATCH_HTPASS_FILE_NAME} {args.username}"
+def delete_user(username):
+    command = f"htpasswd -D {SCRATCH_HTPASS_FILE_NAME} {username}"
     htpasswd_execute(command)
-    if 'admin' in args.username:
+    if 'admin' in username:
         try:
-            delete_admin_permissions(args.username)
+            delete_admin_permissions(username)
         except:
             print("admin-permissions file does not exist: <continuing>")
-        edit_kustomize("remove", args.username)
+        edit_kustomize("remove", username)
 
 def edit_kustomize(action, username):
     os.chdir(ADMIN_PERMS_FULL_DIR)
@@ -170,9 +172,22 @@ def edit_kustomize(action, username):
     except:
         print("Admin permissions don't exist: <continuing>")
 
-def htpasswd_execute(command):
-    os.chdir(f'{BASE_REPO_PATH}/build')
-    os.system(command)
+
+def set_count_and_start(args):
+    count = None
+    start = None
+
+    if args.start is not None:
+        start = args.start
+    else:
+        start = 1
+
+    if args.count is not None:
+        if args.start is not None:
+            count = args.start + args.count
+        else:
+            count = args.count + 1
+    return count, start
 
 def seal_secret(full_path_to_file):
 
@@ -187,17 +202,35 @@ def main():
     args = parse_args()
     validate_input(args)
     validate_ocp_logged_in()
+    count, start = set_count_and_start(args)
 
     if args.action == "get":
         download_htpasswd()
 
     elif args.action == "add":
         user_list, decoded_data = load_file()
-        add_user(args, user_list)
+        if count is None:
+            add_user(args, user_list)
+        else:
+            print("adding sequence of users")
+            for i in range(start, count):
+                username = f'{args.username}-{i}'
+                print(f'Adding user: {username}')
+                add_user(username, args, user_list)
+            print("Done")
+
 
     elif args.action == "delete":
         user_list, decoded_data = load_file()
-        delete_user(args)
+        if count is None:
+            delete_user(args.username)
+        else:
+            print("adding sequence of users")
+            for i in range(start, count):
+                username = f'{args.username}-{i}'
+                print(f'Deleting user: {username}')
+                delete_user(username)
+            print("Done")
 
     elif args.action == "save":
         user_list, file_contents = load_file()

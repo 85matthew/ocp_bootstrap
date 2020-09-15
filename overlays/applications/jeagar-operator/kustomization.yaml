@@ -3,4 +3,4 @@ kind: Kustomization
 
 bases:
   - ../../../base/applications/jaeger-operator/
-  - git::https://github.com/redhat-canada-gitops/catalog/installplan-approver/base
+#  - git::https://github.com/redhat-canada-gitops/catalog/installplan-approver/base

@@ -6,3 +6,6 @@ bases:
   - ../../../overlays/applications/kiali-operator
   - ../../../overlays/applications/servicemesh-operator
   - ../../../overlays/applications/elasticsearch-operator
+
+resources:
+  - service-mesh-init.yaml

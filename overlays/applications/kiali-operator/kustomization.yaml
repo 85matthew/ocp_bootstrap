@@ -3,3 +3,4 @@ kind: Kustomization
 
 bases:
   - ../../../base/applications/kiali-operator/
+  - git::https://github.com/redhat-canada-gitops/catalog/installplan-approver/base

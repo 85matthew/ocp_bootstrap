@@ -3,6 +3,6 @@ kind: Kustomization
 
 bases:
   - git::https://github.com/redhat-canada-gitops/catalog/jaeger-operator/base/
-  - ../../../base/applications/kiali-operator
-  - ../../../base/applications/servicemesh-operator
+  - ../../../overlays/applications/kiali-operator
+  - ../../../overlays/applications/servicemesh-operator
   - ../../../overlays/applications/elasticsearch-operator

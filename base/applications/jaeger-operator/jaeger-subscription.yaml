@@ -1,11 +1,11 @@
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
-  name: kiali-ossm
+  name: jaeger-product
   namespace: openshift-operators-redhat
 spec:
   channel: stable
   installPlanApproval: Automatic
-  name: kiali-ossm
+  name: jaeger-product
   source: redhat-operators
   sourceNamespace: openshift-marketplace

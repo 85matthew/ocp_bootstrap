@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://github.com/85matthew/application-catalog.git
     targetRevision: HEAD
-    path: applications/service-mesh/overlays/default/
+    path: applications/service-mesh/overlays/
   destination:
     server: https://kubernetes.default.svc
     namespace: default

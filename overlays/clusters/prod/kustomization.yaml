@@ -5,7 +5,7 @@ bases:
   - ../../../overlays/applications/auth/
   - ../../../overlays/applications/pipelines-operator/
   - ../../capabilities/service_mesh/
-  - github.com/85matthew/application-catalog/applications/kube2iam/base/
+#  - github.com/85matthew/application-catalog/applications/kube2iam/base/
 
 resources:
   - servicemesh-workshop.yaml

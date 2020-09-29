@@ -4,10 +4,10 @@ kind: Kustomization
 bases:
   - ../../../overlays/applications/auth/
   - ../../../overlays/applications/pipelines-operator/
-  - ../../capabilities/service_mesh/
+#  - ../../capabilities/service_mesh/
   - ../../../base/applications/acm-operator/
 #  - github.com/85matthew/application-catalog/applications/aws2ocp/base/
 #  - github.com/85matthew/application-catalog/applications/kube2iam/base/
 
 resources:
-  - servicemesh-workshop.yaml
+#  - servicemesh-workshop.yaml

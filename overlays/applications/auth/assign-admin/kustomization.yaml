@@ -3,5 +3,4 @@ kind: Kustomization
 resources:
 - mattadmin.yaml
 - labadmin.yaml
-- andrewadmin.yaml
 - mwilkersadmin.yaml

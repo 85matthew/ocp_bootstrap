@@ -76,21 +76,29 @@ def load_file():
 def download_htpasswd():
     cmd = "oc get secret htpass-secret -o=jsonpath=\\'{.data}\\' -n openshift-config"
     args = shlex.split(cmd)
-    result = subprocess.run(args, stdout=subprocess.PIPE )
 
-    test = re.search('^\'map\[htpasswd:(.*)\]\'$', result.stdout.decode('utf-8')).group(1)
+    try:
+        result = subprocess.run(args, stdout=subprocess.PIPE )
+    except OSError:
+        print("no htpasswd file exists. Creating one")
 
-    decoded_result = base64.b64decode(test).decode("utf-8")
-    for line in decoded_result.splitlines():
-        username, password = line.strip().split(':')
-        users.append(username)
+    if result.returncode == 1:
+        os.system(f'touch {SCRATCH_HTPASS_FULL_FILE_NAME}')
+    else:
+        test = re.search('^\'map\[htpasswd:(.*)\]\'$', result.stdout.decode('utf-8')).group(1)
+
+        decoded_result = base64.b64decode(test).decode("utf-8")
+        for line in decoded_result.splitlines():
+            username, password = line.strip().split(':')
+            users.append(username)
 
 
-    f = open(f'{SCRATCH_HTPASS_FULL_FILE_NAME}', "w")
-    f.write(decoded_result)
-    f.close()
+        f = open(f'{SCRATCH_HTPASS_FULL_FILE_NAME}', "w")
+        f.write(decoded_result)
+        f.close()
 
-    return users, decoded_result
+    # return users, decoded_result
+    return
 
 def write_admin_permissions(username):
     template = f"""
@@ -138,19 +146,20 @@ def save_htpasswd():
     seal_secret(SCRATCH_MANIFEST_FULL_FILE_PATH)
 
 
-def add_user(username, args, user_list):
+def add_user( args, user_list):
+    print(args)
     if args.password is None:
-        command=  f"htpasswd -B {SCRATCH_HTPASS_FILE_NAME} {username}"
+        command=  f"htpasswd -B {SCRATCH_HTPASS_FILE_NAME} {args.username}"
     else:
-        command =  f"htpasswd -bB {SCRATCH_HTPASS_FILE_NAME} {username} {args.password}"
+        command =  f"htpasswd -bB {SCRATCH_HTPASS_FILE_NAME} {args.username} {args.password}"
 
     # Check if user already exists in file
-    if username in user_list:
-        if not input(f"{username} already exists. Overwrite password?(y/n): ").lower().strip()[:1] == "y": sys.exit(1)
+    if args.username in user_list:
+        if not input(f"{args.username} already exists. Overwrite password?(y/n): ").lower().strip()[:1] == "y": sys.exit(1)
     htpasswd_execute(command)
-    if 'admin' in username:
-        write_admin_permissions(username)
-        edit_kustomize("add", username)
+    if 'admin' in args.username:
+        write_admin_permissions(args.username)
+        edit_kustomize("add", args.username)
 
 def delete_user(username):
     command = f"htpasswd -D {SCRATCH_HTPASS_FILE_NAME} {username}"
@@ -198,6 +207,10 @@ def seal_secret(full_path_to_file):
     os.system(command)
     os.remove(SCRATCH_MANIFEST_FULL_FILE_PATH)
 
+# def init_htpass():
+
+
+
 def main():
     args = parse_args()
     validate_input(args)
@@ -206,6 +219,9 @@ def main():
 
     if args.action == "get":
         download_htpasswd()
+
+    # elif args.action == "init":
+    #     init_htpass()
 
     elif args.action == "add":
         user_list, decoded_data = load_file()
